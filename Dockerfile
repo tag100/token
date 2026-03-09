@@ -1,10 +1,8 @@
 FROM php:7.4-apache
 
-# Install curl and debugging tools
+# Install curl
 RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
-    curl \
-    net-tools \
     && docker-php-ext-install curl
 
 # Enable Apache rewrite module
@@ -27,36 +25,10 @@ RUN echo "Listen 8080" > /etc/apache2/ports.conf && \
 </VirtualHost>
 EOF
 
-# Create comprehensive test files
-RUN echo "OK" > /var/www/html/health
-RUN echo "<?php echo 'HEALTH CHECK PASSED'; ?>" > /var/www/html/health.php
-RUN echo "<?php phpinfo(); ?>" > /var/www/html/info.php
-
-# Create a startup script with diagnostics
-RUN cat > /usr/local/bin/start-apache.sh <<EOF
-#!/bin/bash
-echo "========================================="
-echo "Starting Apache with diagnostics"
-echo "========================================="
-echo "Current directory: \$(pwd)"
-echo "Directory listing:"
-ls -la /var/www/html/
-echo "========================================="
-echo "Apache config test:"
-apache2ctl -S
-echo "========================================="
-echo "Ports being listened on:"
-netstat -tulpn | grep LISTEN
-echo "========================================="
-echo "Testing localhost connection:"
-curl -I http://localhost:8080/health
-echo "========================================="
-echo "Starting Apache..."
-apache2-foreground
-EOF
-
-RUN chmod +x /usr/local/bin/start-apache.sh
+# Make sure health check file exists
+RUN touch /var/www/html/health.php && \
+    echo "<?php echo 'OK';" > /var/www/html/health.php
 
 EXPOSE 8080
 
-CMD ["/usr/local/bin/start-apache.sh"]
+CMD ["apache2-foreground"]
