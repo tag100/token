@@ -7,6 +7,11 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Create session directory with proper permissions
+RUN mkdir -p /tmp/sessions && \
+    chmod 777 /tmp/sessions && \
+    chown -R www-data:www-data /tmp/sessions
+
 # Copy application files
 COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
@@ -14,7 +19,7 @@ RUN chown -R www-data:www-data /var/www/html
 # Create health check file
 RUN echo "OK" > /var/www/html/health.php
 
-# Runtime configuration - this runs when container starts
+# Runtime configuration
 CMD ["/bin/bash", "-c", "\
     echo '=== FIXING APACHE MPM CONFIGURATION ===' && \
     echo 'Disabling conflicting MPM modules...' && \
