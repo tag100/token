@@ -12,16 +12,18 @@ RUN a2enmod rewrite
 COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
 
-# Configure Apache for port 8080 - FIXED MULTILINE SYNTAX
+# Configure Apache for port 8080 using heredoc syntax
 RUN echo "Listen 8080" > /etc/apache2/ports.conf && \
-    echo "<VirtualHost *:8080>
+    cat > /etc/apache2/sites-available/000-default.conf <<EOF
+<VirtualHost *:8080>
     DocumentRoot /var/www/html
     <Directory /var/www/html>
         Options Indexes FollowSymLinks
         AllowOverride All
         Require all granted
     </Directory>
-</VirtualHost>" > /etc/apache2/sites-available/000-default.conf
+</VirtualHost>
+EOF
 
 # Create health check endpoint
 RUN echo "OK" > /var/www/html/health
