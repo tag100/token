@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install -y \
 # Enable Apache rewrite module
 RUN a2enmod rewrite
 
+# CRITICAL FIX: Disable conflicting MPM modules and enable the correct one
+RUN a2dismod mpm_event mpm_worker || true && \
+    a2enmod mpm_prefork
+
 # Copy application
 COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
@@ -25,9 +29,8 @@ RUN echo "Listen 8080" > /etc/apache2/ports.conf && \
 </VirtualHost>
 EOF
 
-# Make sure health check file exists
-RUN touch /var/www/html/health.php && \
-    echo "<?php echo 'OK';" > /var/www/html/health.php
+# Create health check file
+RUN echo "OK" > /var/www/html/health.php
 
 EXPOSE 8080
 
