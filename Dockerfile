@@ -5,7 +5,13 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     && docker-php-ext-install curl
 
-# Enable Apache modules - DON'T delete anything first
+# Disable all MPMs first, then enable only prefork
+RUN a2dismod mpm_event || true && \
+    a2dismod mpm_worker || true && \
+    a2dismod mpm_prefork || true && \
+    a2enmod mpm_prefork
+
+# Enable rewrite module
 RUN a2enmod rewrite
 
 # Copy application
