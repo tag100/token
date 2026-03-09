@@ -1,58 +1,37 @@
 FROM php:7.4-apache
 
-# Install system dependencies
+# Install system dependencies including curl
 RUN apt-get update && apt-get install -y \
-    git \
     curl \
     libcurl4-openssl-dev \
     libssl-dev \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions (order matters - curl needs libcurl-dev)
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd && \
-    docker-php-ext-install curl && \
+# Install PHP curl extension
+RUN docker-php-ext-install curl && \
     docker-php-ext-enable curl
 
-# Enable Apache modules
-RUN a2enmod rewrite headers
-
-# Configure PHP for better performance
-RUN echo "memory_limit = 256M" >> /usr/local/etc/php/conf.d/custom.ini && \
-    echo "max_execution_time = 60" >> /usr/local/etc/php/conf.d/custom.ini && \
-    echo "max_input_time = 60" >> /usr/local/etc/php/conf.d/custom.ini && \
-    echo "post_max_size = 32M" >> /usr/local/etc/php/conf.d/custom.ini && \
-    echo "upload_max_filesize = 32M" >> /usr/local/etc/php/conf.d/custom.ini && \
-    echo "session.gc_maxlifetime = 7200" >> /usr/local/etc/php/conf.d/custom.ini && \
-    echo "session.save_path = /tmp/sessions" >> /usr/local/etc/php/conf.d/custom.ini
-
-# Create session directory
-RUN mkdir -p /tmp/sessions && \
-    chmod 777 /tmp/sessions
+# Enable Apache rewrite module
+RUN a2enmod rewrite
 
 # Copy application files
 COPY . /var/www/html/
 
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 755 /var/www/html && \
-    chmod -R 777 /tmp/sessions
+    chmod -R 755 /var/www/html
 
-# Configure Apache to allow .htaccess overrides
-RUN sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
+# Configure Apache to allow .htaccess and listen on port 8080
+RUN sed -i 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf && \
+    sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf && \
+    sed -i 's/:80>/:8080>/g' /etc/apache2/sites-available/000-default.conf
 
-# Expose port 8080 (Railway uses 8080 by default)
+# Expose port 8080
 EXPOSE 8080
 
-# Use port 8080 for Apache
-RUN sed -i 's/80/8080/g' /etc/apache2/ports.conf && \
-    sed -i 's/:80/:8080/g' /etc/apache2/sites-available/000-default.conf
+# Test page to verify PHP is working (remove in production)
+RUN echo "<?php phpinfo(); ?>" > /var/www/html/test.php
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
