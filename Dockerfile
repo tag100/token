@@ -1,19 +1,23 @@
 FROM php:7.4-apache
 
-# Install required extensions and tools
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
+    libcurl4-openssl-dev \
+    libssl-dev \
     libpng-dev \
     libonig-dev \
     libxml2-dev \
+    libzip-dev \
     zip \
     unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd curl && \
+# Install PHP extensions (order matters - curl needs libcurl-dev)
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd && \
+    docker-php-ext-install curl && \
     docker-php-ext-enable curl
 
 # Enable Apache modules
