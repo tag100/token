@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install curl
 
 # Enable Apache modules - CORRECT NAMES
-RUN a2enmod prefork
+RUN a2enmod mpm_prefork
 RUN a2enmod rewrite
 
 # Copy application
