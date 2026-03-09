@@ -1,4 +1,18 @@
 <?php
+// Add error reporting at the very beginning
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', '/dev/stderr'); // This will show errors in Railway logs
+
+// Health check endpoint
+if ($_SERVER['REQUEST_URI'] === '/health.php') {
+    http_response_code(200);
+    header('Content-Type: text/plain');
+    echo 'OK';
+    exit;
+}
+
 session_start();
 $API_BASE = 'https://techroboticslabmade.com';
 $TOKEN_SECRET = '408f1c29d1c9f8bbd2d969f762e31323';
