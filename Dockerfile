@@ -1,16 +1,11 @@
 FROM php:7.4-apache
 
-# Remove all existing MPM configurations
-RUN rm -f /etc/apache2/mods-enabled/mpm*.load
-RUN rm -f /etc/apache2/mods-available/mpm*.load
-
 # Install curl
 RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     && docker-php-ext-install curl
 
-# Enable Apache modules - using correct names from the debug output
-RUN a2enmod mpm_prefork
+# Enable Apache modules - DON'T delete anything first
 RUN a2enmod rewrite
 
 # Copy application
