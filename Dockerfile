@@ -9,15 +9,15 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     && docker-php-ext-install curl
 
-# Enable only prefork MPM and rewrite
-RUN a2enmod mpm_prefork
+# Enable Apache modules - CORRECT NAMES
+RUN a2enmod prefork
 RUN a2enmod rewrite
 
 # Copy application
 COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
 
-# Configure Apache for port 8080 - SIMPLE WAY
+# Configure Apache for port 8080
 RUN echo "Listen 8080" > /etc/apache2/ports.conf
 RUN echo "<VirtualHost *:8080>" > /etc/apache2/sites-available/000-default.conf
 RUN echo "    DocumentRoot /var/www/html" >> /etc/apache2/sites-available/000-default.conf
