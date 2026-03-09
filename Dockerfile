@@ -9,10 +9,7 @@ RUN apt-get update && apt-get install -y \
     libcurl4-openssl-dev \
     && docker-php-ext-install curl
 
-# DEBUG: See what MPM modules are available
-RUN ls -la /etc/apache2/mods-available/ | grep mpm
-
-# Enable Apache modules
+# Enable Apache modules - using correct names from the debug output
 RUN a2enmod mpm_prefork
 RUN a2enmod rewrite
 
