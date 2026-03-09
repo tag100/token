@@ -12,7 +12,7 @@ RUN a2enmod rewrite
 COPY . /var/www/html/
 RUN chown -R www-data:www-data /var/www/html
 
-# Configure Apache for port 8080 (simpler approach)
+# Configure Apache for port 8080 - FIXED MULTILINE SYNTAX
 RUN echo "Listen 8080" > /etc/apache2/ports.conf && \
     echo "<VirtualHost *:8080>
     DocumentRoot /var/www/html
